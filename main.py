@@ -26,7 +26,9 @@ print(f"Scrapping track artists from previous list...")
 artists = [artist.getText().strip() for artist
            in soup.select(selector="li>ul>li>span.c-label.a-no-trucate")]
 
-tracks = list(zip(songs, artists))
+billboard_positions = range(1, len(songs)+1)
+
+tracks = list(zip(billboard_positions, songs, artists))
 
 #Connection to Spotify
 scope = "playlist-modify-public"
@@ -42,7 +44,7 @@ sp = spotipy.Spotify(
 #Get Spotify URIs:
 print(f"Fetching the songs from Spotify...")
 spotify_songs_URIs = [sp.search(q=f"track: {song} artist: {artist}", limit=1, type="track")["tracks"]["items"][0]["uri"]
-                      for (song, artist) in tracks]
+                      for (billboard_positions, song, artist) in tracks]
 
 #Get Spotify user, needed to create the list:
 user = sp.current_user()["id"]
