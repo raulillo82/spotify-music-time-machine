@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from auth import SPOTIFY_ID, SPOTIFY_SECRET
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-#import pprint
+import pprint
 
 redirect_uri="http://example.com"
 
@@ -56,4 +56,5 @@ print(f"Adding fetched tracks from {date} to playlist {playlist_name}...")
 result = sp.user_playlist_add_tracks(user, playlist["id"], spotify_songs_URIs)
 if result:
     print("Songs successfully added:")
-    print(tracks)
+    pp = pprint.PrettyPrinter(depth=4)
+    pp.pprint(tracks)
