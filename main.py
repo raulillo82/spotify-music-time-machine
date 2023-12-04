@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from auth import SPOTIFY_ID, SPOTIFY_SECRET
+from auth import SPOTIFY_IDs, SPOTIFY_SECRETs
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import pprint
@@ -19,7 +19,6 @@ def get_date_pitchfork():
                 valid_year = True
         except ValueError:
                 print("The value entered is not a number!")
-    #date = f"{year}-01-01"
     return str(year)
 
 def get_date_billboard():
@@ -41,7 +40,6 @@ def pitchfork_get_tracks(year):
     artists_songs = [track.getText().strip() for track
              in soup.select(selector="div.BodyWrapper-kufPGa.cmVAut.body.body__container.article__body div.body__inner-container h2")]
 
-    #Mary Jane Dunphe: “Stage of Love”
     songs = [entry.split(": ")[0] for entry in artists_songs]
     artists = [entry.replace("“","").replace("”","").split(": ")[1] for entry in artists_songs]
     billboard_positions = range(1, len(songs)+1)
@@ -70,13 +68,13 @@ def billboard_get_tracks(date):
     tracks = list(zip(billboard_positions, songs, artists))
     return tracks
 
-def handle_spotify(tracks, date, origin):
+def handle_spotify(tracks, date, origin, user):
     #Connection to Spotify
     scope = "playlist-modify-public"
     sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
-                client_id=SPOTIFY_ID,
-                client_secret=SPOTIFY_SECRET,
+                client_id=SPOTIFY_IDs[user],
+                client_secret=SPOTIFY_SECRETs[user],
                 redirect_uri=redirect_uri,
                 scope=scope))
 
@@ -84,8 +82,16 @@ def handle_spotify(tracks, date, origin):
 
     #Get Spotify URIs:
     print(f"Fetching the songs from Spotify...")
-    spotify_songs_URIs = [sp.search(q=f"track: {song} artist: {artist} year: {year}", limit=1, type="track")["tracks"]["items"][0]["uri"]
-                          for (billboard_positions, song, artist) in tracks]
+    try:
+        spotify_songs_URIs = [sp.search(q=f"track: {song} artist: {artist} year: {year}",
+                                        limit=1,
+                                        type="track")["tracks"]["items"][0]["uri"]
+                              for (billboard_positions, song, artist) in tracks]
+
+    except spotipy.oauth2.SpotifyOauthError as e:
+        print("spotipy.oauth2.SpotifyOauthError: ", e)
+        print("Could not authenticate to Spotify! Exiting immediately!")
+        exit(1)
 
     #Get Spotify user, needed to create the list:
     user = sp.current_user()["id"]
@@ -126,4 +132,13 @@ elif option == 2:
     date = f"{year}-12-31"
     origin = "Pitchfork"
 
-handle_spotify(tracks, date, origin)
+valid_user = False
+while not valid_user:
+    print("Please choose one Spotify user from the list:")
+    user = input(f"{list(SPOTIFY_IDs.keys())}: ")
+    if user in SPOTIFY_IDs.keys():
+        valid_user = True
+    else:
+        print("The user entered is not in the list!")
+
+handle_spotify(tracks, date, origin, user)
