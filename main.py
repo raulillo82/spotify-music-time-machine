@@ -7,10 +7,47 @@ import pprint
 
 redirect_uri="http://example.com"
 
-def get_date():
+def get_date_pitchfork():
+    valid_year = False
+    while not valid_year:
+        try:
+            year = int(input("Pitchfork has top 100 lists from 2019 to 2023, "
+                             "please choose one year in that interval: "))
+            if year < 2019 or year > 2023:
+                print("Please introduce a valid year in the mentioned range!")
+            else:
+                valid_year = True
+        except ValueError:
+                print("The value entered is not a number!")
+    #date = f"{year}-01-01"
+    return str(year)
+
+def get_date_billboard():
     date = input("Which date do you want to travel to? "
                  "Type the date in this format: YYYY-MM-DD: ")
     return date
+
+
+def pitchfork_get_tracks(year):
+    URL = "https://pitchfork.com/features/lists-and-guides/best-songs-"
+    URL += year
+
+    #Scrap top 100 from pitchfork.com
+    response = requests.get(URL)
+    billboard_page = response.text
+    soup = BeautifulSoup(billboard_page, "html.parser")
+
+    print(f"Scrapping top 100 tracks of {year} from pitchfork.com...")
+    artists_songs = [track.getText().strip() for track
+             in soup.select(selector="div.BodyWrapper-kufPGa.cmVAut.body.body__container.article__body div.body__inner-container h2")]
+
+    #Mary Jane Dunphe: “Stage of Love”
+    songs = [entry.split(": ")[0] for entry in artists_songs]
+    artists = [entry.replace("“","").replace("”","").split(": ")[1] for entry in artists_songs]
+    billboard_positions = range(1, len(songs)+1)
+
+    tracks = list(zip(billboard_positions, songs, artists))
+    return tracks
 
 def billboard_get_tracks(date):
     URL = "https://www.billboard.com/charts/hot-100/"
@@ -33,7 +70,7 @@ def billboard_get_tracks(date):
     tracks = list(zip(billboard_positions, songs, artists))
     return tracks
 
-def handle_spotify(tracks, date):
+def handle_spotify(tracks, date, origin):
     #Connection to Spotify
     scope = "playlist-modify-public"
     sp = spotipy.Spotify(
@@ -54,7 +91,7 @@ def handle_spotify(tracks, date):
     user = sp.current_user()["id"]
 
     #Create the empty list:
-    playlist_name = f"Billboard.com top 100 on {date}"
+    playlist_name = f"{origin}.com top 100 on {date}"
     print(f"Creating playlist {playlist_name} for user {user} in Spotify...")
     playlist = sp.user_playlist_create(user=user, name=playlist_name, public=True,
                                        description=playlist_name)
@@ -67,5 +104,26 @@ def handle_spotify(tracks, date):
         pp = pprint.PrettyPrinter(depth=4)
         pp.pprint(tracks)
 
-date = get_date()
-handle_spotify(billboard_get_tracks(date), date)
+valid_option = False
+while not valid_option:
+    print("Please choose one of the two options to create a Spotify playlist:")
+    print("1- Billboard.com (exact date)")
+    print("2- Pitchfork.com (hits for the full year from 2019 to 2023")
+    option = int(input("Select your option, 1 or 2: "))
+    if option < 1 or option > 2:
+        print("Please select a valid option!")
+    else:
+        valid_option = True
+
+if option == 1:
+    date = get_date_billboard()
+    tracks = billboard_get_tracks(date)
+    origin = "Billboard"
+
+elif option == 2:
+    year = get_date_pitchfork()
+    tracks = pitchfork_get_tracks(year)
+    date = f"{year}-12-31"
+    origin = "Pitchfork"
+
+handle_spotify(tracks, date, origin)
