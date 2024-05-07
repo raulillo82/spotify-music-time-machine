@@ -114,7 +114,7 @@ valid_option = False
 while not valid_option:
     print("Please choose one of the two options to create a Spotify playlist:")
     print("1- Billboard.com (exact date)")
-    print("2- Pitchfork.com (hits for the full year from 2019 to 2023")
+    print("2- Pitchfork.com (hits for the full year from 2019 to 2023)")
     option = int(input("Select your option, 1 or 2: "))
     if option < 1 or option > 2:
         print("Please select a valid option!")
