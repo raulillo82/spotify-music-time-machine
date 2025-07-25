@@ -83,7 +83,7 @@ def handle_spotify(tracks, date, origin, user):
     #Get Spotify URIs:
     print(f"Fetching the songs from Spotify...")
     try:
-        spotify_songs_URIs = [sp.search(q=f"track: {song} artist: {artist} year: {year}",
+        spotify_songs_URIs = [sp.search(q=f"track: {song} artist: {artist}",
                                         limit=1,
                                         type="track")["tracks"]["items"][0]["uri"]
                               for (billboard_positions, song, artist) in tracks]
