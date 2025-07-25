@@ -137,9 +137,12 @@ elif option == 2:
 
 valid_user = False
 while not valid_user:
-    print("Please choose one Spotify user from the list:")
+    print("Please choose one Spotify user from the list (defaults to first one):")
     user = input(f"{list(SPOTIFY_IDs.keys())}: ")
     if user in SPOTIFY_IDs.keys():
+        valid_user = True
+    elif user == "":
+        user = list(SPOTIFY_IDs.keys())[0]
         valid_user = True
     else:
         print("The user entered is not in the list!")
