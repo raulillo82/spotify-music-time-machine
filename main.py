@@ -66,6 +66,9 @@ def billboard_get_tracks(date):
     billboard_positions = range(1, len(songs)+1)
 
     tracks = list(zip(billboard_positions, songs, artists))
+    if not tracks:
+        print("Empty tracks in billboard search, exiting")
+        exit(1)
     return tracks
 
 def handle_spotify(tracks, date, origin, user):
