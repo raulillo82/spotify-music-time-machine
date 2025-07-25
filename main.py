@@ -107,7 +107,7 @@ def handle_spotify(tracks, date, origin, user):
 
     #Add previously fetched songs to that list:
     print(f"Adding fetched tracks from {date} to playlist {playlist_name}...")
-    result = sp.user_playlist_add_tracks(user, playlist["id"], spotify_songs_URIs)
+    result = sp.playlist_add_items(playlist["id"], spotify_songs_URIs)
     if result:
         print("Songs successfully added:")
         pp = pprint.PrettyPrinter(depth=4)
